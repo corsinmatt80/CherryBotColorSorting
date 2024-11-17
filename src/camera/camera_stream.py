@@ -1,6 +1,6 @@
 import cv2
 
-def save_image():
+def save_image(name : str):
     camera_url = ("https://interactions.ics.unisg.ch/61-102/cam5/live-stream")
     cap = cv2.VideoCapture(camera_url)
 
@@ -8,7 +8,7 @@ def save_image():
         ret, frame = cap.read()
         if ret:
             cv2.imshow("Camera Frame", frame)
-            cv2.imwrite("../assets/cloth.jpg", frame)
+            cv2.imwrite("../assets/"+name, frame)
             cv2.waitKey(1)
             cv2.destroyAllWindows()
         else:

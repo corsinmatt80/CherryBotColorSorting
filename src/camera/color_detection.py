@@ -3,7 +3,7 @@ from camera_stream import save_image
 
 
 def get_color_in_middle() -> tuple[int, int, int]:
-    save_image()
+    save_image("cloth.jpg")
 
     cloth = cv2.imread("../assets/cloth.jpg")
     if cloth is None:
