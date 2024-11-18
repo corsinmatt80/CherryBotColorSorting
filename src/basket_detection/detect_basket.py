@@ -16,7 +16,22 @@ def detect_baskets():
     edge_image = color_edges(baskets_image, edges)
 
     # Display the image with contours
-    cv2.imshow('Contours', edge_image)
+    cv2.imshow('Edges', edge_image)
+    cv2.imshow("Baskets", baskets_image)
+
+
+
+    image_round_figures, rounds = detect_round_figures(baskets_image.copy(),edges,5,5)
+    cv2.imshow('Rounds', image_round_figures)
+
+
+
+    #image_square_figures, squares = detect_square_figures(baskets_image.copy(),edges)
+    #cv2.imshow('Squares', image_square_figures)
+
+
+
+
     cv2.waitKey(10000)
 
 
@@ -47,11 +62,9 @@ def sobel_edge_detection(image):
         [-1, 0, 1]
     ])
     sobel_y = np.array([
-        [
             [-1, -2, -1],
             [ 0,  0,  0],
             [ 1,  2,  1]
-        ]
     ])
     #get dimensions of the image
     rows,cols = image.shape
@@ -79,7 +92,7 @@ def sobel_edge_detection(image):
     #convert it for compatibility reasons
     return magnitude.astype(np.uint8)
 
-def color_edges(image, edges, edge_color  = (255,0,0), threshold = 40):
+def color_edges(image, edges, edge_color  = (255,0,0), threshold = 35):
     edges_mask = edges > threshold
     #copy the original image to modify
     edges_colored = image.copy()
@@ -90,10 +103,50 @@ def color_edges(image, edges, edge_color  = (255,0,0), threshold = 40):
     return edges_colored
 
 
-def detect_round_figures():
-    pass
+def detect_round_figures(image, edges, rad, circ):
+    #function for finding contours
+    #those are objects or figures that are closed
+    edge_mask = (edges > 75).astype(np.uint8)
+    contours,_ = cv2.findContours(edge_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    round_figures = []
 
-def detect_square_figures():
-    pass
+    for contour in contours:
+        #this function draws the minimum possible circle around the contour
+        ((x,y), radius) = cv2.minEnclosingCircle(contour)
+        #formula for how close the figure is to a circle
+        #cv2.contourArea : area of contour
+        #cv2.arcLength : circumference
+        circularity = (4 * np.pi * cv2.contourArea(contour)) / (cv2.arcLength(contour, True) * 2 + 1e-5)
+        if radius > rad and circularity > circ:
+            round_figures.append((contour, (int(x), int(y), int(radius))))
+            cv2.drawContours(image, [contour], -1, (0, 255, 0), 2)
+            cv2.circle(image, (int(x), int(y)), int(radius), (255, 0, 0), 2)
+            cv2.circle(image, (int(x), int(y)), 3, (0, 0, 255), -1)
+
+    return image, round_figures
+
+
+
+def detect_square_figures(image, edges):
+    #function for finding contours
+    #those are objects or figures that are closed
+    edge_mask = (edges > 75).astype(np.uint8)
+    contours, _ = cv2.findContours(edge_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    square_figures = []
+
+    for contour in contours:
+        epsilon = 0.04 * cv2.arcLength(contour, True)
+        #approxPolyDP : stores edges
+        approx = cv2.approxPolyDP(contour, epsilon, True)
+
+        if len(approx) == 4 and cv2.contourArea(contour) > 100:
+            #boundingRect : finds a rectangle around for the four points
+            (x, y, w, h) = cv2.boundingRect(approx)
+            aspect_ratio = w / float(h)
+            if 0.8 <= aspect_ratio <= 1.2:
+                square_figures.append(approx)
+                cv2.drawContours(image, [approx], -1, (0,255,0),2)
+
+    return image, square_figures
 
 detect_baskets()
