@@ -49,8 +49,8 @@ def sobel_edge_detection(image):
     sobel_y = np.array([
         [
             [-1, -2, -1],
-            [0, 0, 0],
-            [1, 2, 1]
+            [ 0,  0,  0],
+            [ 1,  2,  1]
         ]
     ])
     #get dimensions of the image
@@ -79,7 +79,7 @@ def sobel_edge_detection(image):
     #convert it for compatibility reasons
     return magnitude.astype(np.uint8)
 
-def color_edges(image, edges, edge_color  = (255,0,0), threshold = 50):
+def color_edges(image, edges, edge_color  = (255,0,0), threshold = 40):
     edges_mask = edges > threshold
     #copy the original image to modify
     edges_colored = image.copy()
@@ -89,3 +89,11 @@ def color_edges(image, edges, edge_color  = (255,0,0), threshold = 50):
 
     return edges_colored
 
+
+def detect_round_figures():
+    pass
+
+def detect_square_figures():
+    pass
+
+detect_baskets()
