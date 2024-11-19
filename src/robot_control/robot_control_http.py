@@ -1,10 +1,38 @@
 import requests
 import json
 import time
-import math
-import numpy
+
+# Swaggerhub: https://app.swaggerhub.com/apis-docs/interactions-hsg/robots/1.0.0
 
 base_url = 'https://api.interactions.ics.unisg.ch/cherrybot2'
+movement_speed = 50
+
+def help():
+    print("Commands:\n\tlog_on name,email\n\tmove x,y,z, pitch, roll, yaw\n\ttoggle\n\tlog_off\n\tprint_cords\n\tupdate_cords\n\tinitialize\n\tget_tcp\n\tget_token\n\tdeltaMove delta_x, delta_y, delta_z, delta_pitch, delta_roll, delta_yaw\n")
+
+def print_cords():
+    global x_pos, y_pos, z_pos, pitch, roll, yaw
+    print("Coordinates:", "\n\tx: ", x_pos, "\n\ty: ", y_pos, "\n\tz: ", z_pos, "\n")
+    print("Rotation:", "\n\tpitch: ", pitch, "\n\troll: ", roll, "\n\tyaw: ", yaw, "\n")
+
+def get_cords():
+    global x_pos, y_pos, z_pos, pitch, roll, yaw
+    tcp = get_tcp()
+    x_pos = tcp['coordinate']['x']
+    y_pos = tcp['coordinate']['y']
+    z_pos = tcp['coordinate']['z']
+    pitch = tcp['rotation']['pitch']
+    roll = tcp['rotation']['roll']
+    yaw = tcp['rotation']['yaw']
+
+def update_cords(new_x, new_y, new_z, new_pitch, new_roll, new_yaw):
+    global x_pos, y_pos, z_pos, pitch, roll, yaw
+    x_pos = new_x
+    y_pos = new_y
+    z_pos = new_z
+    pitch = new_pitch
+    roll = new_roll
+    yaw = new_yaw
 
 def initialize():
     time.sleep(1)
@@ -15,50 +43,13 @@ def initialize():
     }
     response = requests.put(url, headers=headers)
     if response.status_code == 200:
-        global current_distance
-        global current_angle
-        global initz
-        global initpitch
-        global initroll
-        tcp = get_tcp()
-        initx = tcp['coordinate']['x']
-        inity = tcp['coordinate']['y']
-        initz = tcp['coordinate']['z']
-        initpitch = tcp['rotation']['pitch']
-        initroll = tcp['rotation']['yaw']
-        current_angle = tcp['rotation']['yaw']
-        current_distance = float(math.sqrt(initx * initx + inity * inity))
-        current_angle = 0
-        print("Coordinates: ", initx, inity, initz)
+        # Wait for the robot to initialize, and make sure it is done
+        time.sleep(5)
+        print('Initialization successful\n')
+        get_cords()
+        print_cords()
     else:
         return False
-
-
-def put_x_y_yaw(x, y, yaw):
-    time.sleep(1)
-    print(x, y, yaw)
-    url = base_url + '/tcp/target'
-    headers = {
-        'Content-Type': 'application/json',
-        'Authentication': token
-    }
-    payload = json.dumps({
-  "target": {
-    "coordinate": {
-      "x": x,
-      "y": y,
-      "z": initz
-    },
-    "rotation": {
-      "roll": initroll,
-      "pitch": initpitch,
-      "yaw": yaw
-    }
-  },
-  "speed": 50
-})
-    requests.put(url, headers=headers, data=payload)
-
 
 def get_tcp():
     time.sleep(1)
@@ -107,30 +98,44 @@ def log_on(userdata):
         print("Someone else is using the robot\n")
 
 
-# Use by the command move
-def move(param):
-    global current_distance
-    global current_angle
-    current_distance += float(param)
-    x = math.cos(numpy.deg2rad(current_angle)) * current_distance
-    y = math.sin(numpy.deg2rad(current_angle)) * current_distance
-    put_x_y_yaw(x, y, current_angle)
+# Move to a position with "move x,y,z, pitch, roll, yaw"
+def move(new_x, new_y, new_z, new_pitch, new_roll, new_yaw):
+    # Protect against collisions with the table
+    if new_z <= 180:
+        new_z = 180
 
+    url = base_url + '/tcp/target'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authentication': token
+    }
+    payload = json.dumps({
+        "target": {
+            "coordinate": {
+                "x": new_x,
+                "y": new_y,
+                "z": new_z
+            },
+            "rotation": {
+                "roll": new_roll,
+                "pitch": new_pitch,
+                "yaw": new_yaw
+            }
+        },
+        "speed": movement_speed
+    })
+    response = requests.put(url, headers=headers, data=payload)
 
-# Use by the command rotate
-def rotate(param):
-    global current_distance
-    global current_angle
-    current_angle += float(param)
-    if current_angle < 0:
-        current_angle += 360
-    elif current_angle >= 360:
-        current_angle -= 360
-    x = math.cos(numpy.deg2rad(current_angle)) * current_distance
-    y = math.sin(numpy.deg2rad(current_angle)) * current_distance
-    put_x_y_yaw(x, y, current_angle)
-    # Add your code here to connect to process the rotate command.
+    if response.status_code == 200:
+        print('Moved to position\n')
+        update_cords(new_x, new_y, new_z, new_pitch, new_roll, new_yaw)
+        print_cords()
+    else:
+        print('Something went wrong\n')
+        print(response.text)
 
+def deltaMove(delta_x, delta_y, delta_z, delta_pitch, delta_roll, delta_yaw):
+    move(x_pos + delta_x, y_pos + delta_y, z_pos + delta_z, pitch + delta_pitch, roll + delta_roll, yaw + delta_yaw)
 
 # Toggle gripper with "toggle"
 def toggle():
@@ -172,6 +177,9 @@ def log_off():
     except:
         print('Not logged-in\n')
 
+def start_position():
+    print("Moving to start position")
+    move(400, 0, 250, -180, 0, -180)
 
 while True:
     command = input("Command: ")
@@ -183,3 +191,4 @@ while True:
             exec(f'{command}()')
         except:
             pass
+
