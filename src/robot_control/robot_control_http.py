@@ -159,7 +159,7 @@ def toggle():
 def log_off():
     try:
         print("log off from the robot\n")
-        url = base_url + '/operator'
+        url = base_url + '/operator/'
         url += token
         response = requests.delete(url)
 
