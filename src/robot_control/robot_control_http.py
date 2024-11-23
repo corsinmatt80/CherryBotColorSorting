@@ -111,14 +111,14 @@ def move(new_x, new_y, new_z, new_pitch, new_roll, new_yaw, token):
 
 
 # Toggle gripper with "toggle"
-def toggle(token):
+def toggle(token, distance):
     url = base_url + '/gripper'
     headers = {
         'Content-Type': 'application/json',
         'Authentication': token
     }
 
-    distance = json.loads(requests.get(url, headers=headers).text)
+    # distance = json.loads(requests.get(url, headers=headers).text)
     time.sleep(1)
     try:
         if int(distance) == 0:
