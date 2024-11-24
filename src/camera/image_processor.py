@@ -24,8 +24,13 @@ class ImageProcessor:
         return clothes
 
     def find_clothes(self, clothes_mask):
-        """Identify distinct items of clothing in the mask."""
-        contours, _ = cv2.findContours(clothes_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Dilate the clothes mask to fill gaps and then erode to sharpen the edges
+        kernel = np.ones((5,5), np.uint8)
+        dilated = cv2.dilate(clothes_mask, kernel, iterations=2)
+        eroded = cv2.erode(dilated, kernel, iterations=1)
+
+        # Find contours on the processed mask
+        contours, _ = cv2.findContours(eroded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         return contours
 
     def get_color_of_cloth(self, image, contour):
