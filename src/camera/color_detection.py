@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from camera_stream import save_image, capture_process_image
+from src.camera.camera_stream import save_image
 
 
 def get_color_in_middle() -> tuple[int, int, int]:
@@ -18,9 +18,8 @@ def get_color_in_middle() -> tuple[int, int, int]:
         return rgb
     return None
 
-def get_average_color() -> tuple[int, int, int]:
-    capture_process_image("cloth")
-    image = cv2.imread("../assets/cloth.jpg")
+def get_average_color(image_path) -> tuple[int, int, int]:
+    image = cv2.imread(image_path)
     if image is None:
         print("Failed to load image")
         return None

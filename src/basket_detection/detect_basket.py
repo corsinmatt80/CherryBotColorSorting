@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 def detect_baskets():
-    save_image('baskets.jpg')
+    save_image('baskets')
     baskets_image = cv2.imread('../assets/baskets.jpg')
 
     #there exists a library to do this with pre given functions
@@ -21,18 +21,18 @@ def detect_baskets():
 
 
 
-    image_round_figures, rounds = detect_round_figures(baskets_image.copy(),edges,5,5)
-    cv2.imshow('Rounds', image_round_figures)
+    #image_round_figures, rounds = detect_round_figures(baskets_image.copy(),edges,5,5)
+    #cv2.imshow('Rounds', image_round_figures)
 
 
 
-    #image_square_figures, squares = detect_square_figures(baskets_image.copy(),edges)
-    #cv2.imshow('Squares', image_square_figures)
+    image_square_figures, squares = detect_square_figures(baskets_image.copy(),edges)
+    cv2.imshow('Squares', image_square_figures)
 
 
 
 
-    cv2.waitKey(10000)
+    cv2.waitKey(100000)
 
 
 def convert_gray(image):
@@ -130,7 +130,7 @@ def detect_round_figures(image, edges, rad, circ):
 def detect_square_figures(image, edges):
     #function for finding contours
     #those are objects or figures that are closed
-    edge_mask = (edges > 75).astype(np.uint8)
+    edge_mask = (edges > 35).astype(np.uint8)
     contours, _ = cv2.findContours(edge_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     square_figures = []
 
