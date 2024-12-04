@@ -9,7 +9,9 @@ def pick_up_cloth(token: str):
     move(450, 0, 15, -180, 0, -180, token) # Use coordinates of the cloth pile
     time.sleep(11)
     close_gripper(token)
-    time.sleep(5)
+    time.sleep(3)
+    move(450, 0, 200, -180, 0, -180, token)
+    time.sleep(6)
 
 def move_to_bin(color: str, token: str):
     squares = np.load('backend/assets/squares.npy')
@@ -21,25 +23,25 @@ def move_to_bin(color: str, token: str):
     if color == "light":
         print("Moving to light bin")
         centroid = robot_centroids[0]
-        move(float(centroid[0]), float(centroid[1]), 100, -180, 0, -180, token) 
+        move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token) 
         time.sleep(10)
         open_gripper(token)
     elif color == "dark":
         print("Moving to dark bin")
         centroid = robot_centroids[1]
-        move(float(centroid[0]), float(centroid[1]), 100, -180, 0, -180, token)
+        move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token)
         time.sleep(10) 
         open_gripper(token)
     elif color == "unsortable":
         print("Moving to unsortable bin")
         centroid = robot_centroids[2]
-        move(float(centroid[0]), float(centroid[1]), 100, -180, 0, -180, token) 
+        move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token) 
         time.sleep(10)
         open_gripper(token)
     elif color == "colored":
         print("Moving to colored bin")
         centroid = robot_centroids[3]
-        move(float(centroid[0]), float(centroid[1]), 100, -180, 0, -180, token) 
+        move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token) 
         time.sleep(10)
         open_gripper(token)
 

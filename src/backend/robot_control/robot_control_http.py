@@ -5,7 +5,7 @@ import time
 # Swaggerhub: https://app.swaggerhub.com/apis-docs/interactions-hsg/robots/1.0.0
 
 base_url = 'https://api.interactions.ics.unisg.ch/cherrybot2'
-movement_speed = 50
+movement_speed = 100
 
 def print_cords(x_pos, y_pos, z_pos, pitch, roll, yaw):
     print("Coordinates:", "\n\tx: ", x_pos, "\n\ty: ", y_pos, "\n\tz: ", z_pos, "\n")
