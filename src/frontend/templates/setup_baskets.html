@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Baskets</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <h1>Set Baskets</h1>
+    <p>Select four baskets into which the robot will sort the clothes".</p>
+
+    <div>
+        <canvas id="basketsCanvas"></canvas>
+    </div>
+    <button id="acceptButton" disabled>Accept</button>
+
+    <script>
+        const imagePath = "{{ image_path }}";
+        const detectedSquares = JSON.parse('{{ squares|tojson}}');
+        let selectedSquares = [];
+        const canvas = document.getElementById("basketsCanvas");
+        const ctx = canvas.getContext("2d");
+        const img = new Image();
+
+        console.log(detectedSquares);
+
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            drawSquares(detectedSquares);
+        };
+
+        img.src = imagePath;
+
+        function drawSquares(squares) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            ctx.lineWidth = 2;
+            squares.forEach(square => {
+                ctx.beginPath();
+                ctx.moveTo(square[0][0], square[0][1]);
+                for (let i = 1; i < square.length; i++) {
+                    ctx.lineTo(square[i][0], square[i][1]);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = selectedSquares.includes(square) ? 'blue' : 'red';
+                ctx.stroke();
+            });
+        }
+
+        canvas.addEventListener('click', function (event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const clickedSquareIndex = detectedSquares.findIndex(square => {
+                return ctx.isPointInPath(new Path2D(`M${square.map(p => p.join(',')).join('L')}Z`), x, y);
+            });
+
+            if (clickedSquareIndex !== -1) {
+                const clickedSquare = detectedSquares[clickedSquareIndex];
+                if (selectedSquares.length > 4) {
+                    alert("You can only select 4 baskets.");
+                    return;
+                }
+                if (selectedSquares.includes(clickedSquare)) {
+                    selectedSquares = selectedSquares.filter(square => square !== clickedSquare);
+                } else {
+                    selectedSquares.push(clickedSquare);
+                }
+                drawSquares(detectedSquares);
+                updateAcceptButtonState();
+            }
+        });
+
+        function updateAcceptButtonState() {
+            const acceptButton = document.getElementById("acceptButton");
+            acceptButton.disabled = selectedSquares.length < 4;
+        }
+
+        // Handle Accept and Adjust buttons
+        document.getElementById("acceptButton").addEventListener("click", () => {
+            fetch("/setup_baskets", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                // Send the selected squares to the server
+                body: JSON.stringify({ squares: selectedSquares }),
+            }).then((response) => {
+                if (response.ok) {
+                    window.location.href = "/";
+                } else {
+                    alert("Error setting up baskets. Please try again.");
+                }
+            })
+        });
+    </script>
+</body>
+
+</html>

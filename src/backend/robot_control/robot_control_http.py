@@ -5,7 +5,7 @@ import time
 # Swaggerhub: https://app.swaggerhub.com/apis-docs/interactions-hsg/robots/1.0.0
 
 base_url = 'https://api.interactions.ics.unisg.ch/cherrybot2'
-movement_speed = 50
+movement_speed = 100
 
 def print_cords(x_pos, y_pos, z_pos, pitch, roll, yaw):
     print("Coordinates:", "\n\tx: ", x_pos, "\n\ty: ", y_pos, "\n\tz: ", z_pos, "\n")
@@ -82,8 +82,6 @@ def log_on(name, email):
 # Move to a position with "move x,y,z, pitch, roll, yaw"
 def move(new_x, new_y, new_z, new_pitch, new_roll, new_yaw, token):
     # Protect against collisions with the table
-    if new_z <= 180:
-        new_z = 180
 
     url = base_url + '/tcp/target'
     headers = {
@@ -109,6 +107,23 @@ def move(new_x, new_y, new_z, new_pitch, new_roll, new_yaw, token):
 
     return response.status_code
 
+def open_gripper(token):
+    url = base_url + '/gripper'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authentication': token
+    }
+    response = requests.put(url, headers=headers, data='500')
+    return response.status_code
+
+def close_gripper(token):
+    url = base_url + '/gripper'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authentication': token
+    }
+    response = requests.put(url, headers=headers, data='0')
+    return response.status_code
 
 # Toggle gripper with "toggle"
 def toggle(token):
