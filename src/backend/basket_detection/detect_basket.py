@@ -1,4 +1,4 @@
-from src.camera.camera_stream import save_image
+from backend.camera.camera_stream import save_image
 import cv2
 import numpy as np
 
@@ -28,11 +28,12 @@ def detect_baskets():
 
     image_square_figures, squares = detect_square_figures(baskets_image.copy(),edges)
     cv2.imshow('Squares', image_square_figures)
+    # Save processed images for display
+    processed_image_path = "../frontend/static/processed_baskets.jpg"
+    cv2.imwrite(processed_image_path, image_square_figures)
 
-
-
-
-    cv2.waitKey(100000)
+    # Return the path for use in the frontend
+    return processed_image_path, squares
 
 
 def convert_gray(image):

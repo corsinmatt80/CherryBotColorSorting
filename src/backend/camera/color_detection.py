@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from src.camera.camera_stream import save_image
+from backend.camera.camera_stream import save_image
 
 
 def get_color_in_middle() -> tuple[int, int, int]:

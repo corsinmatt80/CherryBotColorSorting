@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laundry Sorting</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Laundry Sorting System</h1>
+
+        <!-- Detect Baskets Button -->
+        <button id="detectBasketsButton">Detect Baskets</button>
+
+        <!-- Start Sorting Button (Initially Disabled) -->
+        <button id="startSortingButton" disabled>Start Sorting</button>
+
+        <!-- Status Message -->
+        <p id="statusMessage">Please detect baskets before starting the sorting process.</p>
+    </div>
+
+    <script>
+        const detectBasketsButton = document.getElementById("detectBasketsButton");
+        const startSortingButton = document.getElementById("startSortingButton");
+        const statusMessage = document.getElementById("statusMessage");
+
+        // Event Listener for Detect Baskets Button
+        detectBasketsButton.addEventListener("click", () => {
+            // Send a request to detect baskets
+            fetch("/setup_baskets", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "Baskets detected") {
+                        // Enable the "Start Sorting" button
+                        startSortingButton.disabled = false;
+                        statusMessage.textContent = "Baskets have been detected. You can now start the sorting process.";
+                        statusMessage.style.color = "green";
+                    } else if (data.status === "Adjust baskets") {
+                        // Direct user to adjust the baskets if needed
+                        statusMessage.textContent = "Baskets need manual adjustment. Please adjust them before starting.";
+                        statusMessage.style.color = "orange";
+                    } else {
+                        // Handle unexpected responses
+                        statusMessage.textContent = "Error: Could not detect baskets. Try again.";
+                        statusMessage.style.color = "red";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error detecting baskets:", error);
+                    statusMessage.textContent = "Error detecting baskets. Please try again.";
+                    statusMessage.style.color = "red";
+                });
+        });
+
+        // Event Listener for Start Sorting Button
+        startSortingButton.addEventListener("click", () => {
+            // Send a request to start the sorting process
+            fetch("/start_sorting", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "Sorting started") {
+                        statusMessage.textContent = "Sorting process has started!";
+                        statusMessage.style.color = "green";
+                    } else {
+                        statusMessage.textContent = "Error: Could not start sorting. Try again.";
+                        statusMessage.style.color = "red";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error starting sorting process:", error);
+                    statusMessage.textContent = "Error starting sorting process. Please try again.";
+                    statusMessage.style.color = "red";
+                });
+        });
+    </script>
+</body>
+</html>

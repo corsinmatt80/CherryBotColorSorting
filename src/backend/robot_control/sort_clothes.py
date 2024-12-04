@@ -1,4 +1,4 @@
-from robot_control_http import move, toggle
+from backend.robot_control.robot_control_http import move, toggle
 
 def pick_up_cloth(token: str):
     move(0, 0, 180, 0, 0, 0, token) # Use coordinates of the cloth pile

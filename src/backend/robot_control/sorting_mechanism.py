@@ -1,4 +1,4 @@
-from src.utils.color_ranges import COLOR_RANGES
+from backend.utils.color_ranges import COLOR_RANGES
 
 def sorting_mechanism(current_clothing : tuple[int,int,int]) -> str:
     for color_name, color_ranges in COLOR_RANGES.items():

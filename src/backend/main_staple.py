@@ -1,10 +1,11 @@
 import cv2
 import time
 import os
-from src.camera.camera_stream import capture_process_image, are_images_equal, save_image
-from src.camera.color_detection import get_average_color, can_be_sorted, classify_clothes
-from src.robot_control.sort_clothes import pick_up_cloth_and_move_to_bin
-from src.robot_control.robot_control_http import  get_token
+from backend.camera.camera_stream import capture_process_image, are_images_equal, save_image
+from backend.camera.color_detection import get_average_color, can_be_sorted, classify_clothes
+from backend.robot_control.sort_clothes import pick_up_cloth_and_move_to_bin
+from backend.robot_control.robot_control_http import  get_token
+from backend.basket_detection.detect_basket import detect_baskets
 
 
 class LaundrySorter:
@@ -20,6 +21,7 @@ class LaundrySorter:
 
 
     def run(self):
+        detect_baskets()
         while True:
             capture_process_image("assets/cloth")
             current_image_path = "assets/cloth_cropped.jpg"
@@ -28,7 +30,7 @@ class LaundrySorter:
                 continue
             
             if are_images_equal(self.base_image_path, current_image_path):
-                print("Image is identical to the base image. No clothing detected.")
+                print("Sorting Process is complete.")
                 break
             else:
                 print("Not the same")
@@ -40,6 +42,7 @@ class LaundrySorter:
                     pick_up_cloth_and_move_to_bin(token = self.token, color = cloth_type)
                 else:
                     print("Image cannot be sorted automatically, please sort manually.")
+                    pick_up_cloth_and_move_to_bin(token = self.token, color = "unsortable")
                     break  # Stop after detecting different image
 
 

@@ -1,8 +1,8 @@
-from camera.color_detection import *
+from src.backend.camera.color_detection import *
 import keyboard
 import time
-from src.robot_control.motion_controller import move_to_bin
-from src.robot_control.sorting_mechanism import sorting_mechanism
+from src.backend.robot_control.motion_controller import move_to_bin
+from src.backend.robot_control.sorting_mechanism import sorting_mechanism
 
 
 def main():
