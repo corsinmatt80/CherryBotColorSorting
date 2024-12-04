@@ -5,6 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laundry Sorting</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        async function fetchBinCounts() {
+            const response = await fetch('/bin_counts');
+            const data = await response.json();
+            document.getElementById('light-bin-count').innerText = data.light_bin_count;
+            document.getElementById('dark-bin-count').innerText = data.dark_bin_count;
+            document.getElementById('unsortable-bin-count').innerText = data.unsortable_bin_count;
+            document.getElementById('colored-bin-count').innerText = data.colored_bin_count;
+
+            if (data.light_bin_count == 10) {
+                alert('Light bin is full');
+            }
+            if (data.dark_bin_count == 10) {
+                alert('Dark bin is full');
+            }
+            if (data.unsortable_bin_count == 10) {
+                alert('Unsortable bin is full');
+            }
+            if (data.colored_bin_count == 10) {
+                alert('Colored bin is full');
+            }
+        }
+
+        function startSorting() {
+            fetch("/start_sorting", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    const statusMessage = document.getElementById('status-message');
+                    if (data.status === "Sorting started") {
+                        statusMessage.textContent = "Sorting process has started!";
+                        statusMessage.style.color = "green";
+                        document.getElementById('bin-counts').classList.remove('hidden');
+                        fetchBinCounts();
+                        setInterval(fetchBinCounts, 5000); // Fetch bin counts every 5 seconds
+                    } else {
+                        statusMessage.textContent = "Error: Could not start sorting. Try again.";
+                        statusMessage.style.color = "red";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error starting sorting process:", error);
+                    const statusMessage = document.getElementById('status-message');
+                    statusMessage.textContent = "Error starting sorting process. Please try again.";
+                    statusMessage.style.color = "red";
+                });
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -14,10 +66,19 @@
         <button id="detectBasketsButton">Detect Baskets</button>
 
         <!-- Start Sorting Button (Initially Disabled) -->
-        <button id="startSortingButton" disabled>Start Sorting</button>
+        <button id="startSortingButton" disabled onclick="startSorting()">Start Sorting</button>
 
         <!-- Status Message -->
-        <p id="statusMessage">Please detect baskets before starting the sorting process.</p>
+        <p id="status-message">Please detect baskets before starting the sorting process.</p>
+    </div>
+
+    
+    <div id="bin-counts" class="hidden">
+        <h1>Bin Counts</h1>
+        <p>Light Bin: <span id="light-bin-count">0</span></p>
+        <p>Dark Bin: <span id="dark-bin-count">0</span></p>
+        <p>Unsortable Bin: <span id="unsortable-bin-count">0</span></p>
+        <p>Colored Bin: <span id="colored-bin-count">0</span></p>
     </div>
 
     <script>
