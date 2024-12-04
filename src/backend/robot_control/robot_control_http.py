@@ -82,8 +82,6 @@ def log_on(name, email):
 # Move to a position with "move x,y,z, pitch, roll, yaw"
 def move(new_x, new_y, new_z, new_pitch, new_roll, new_yaw, token):
     # Protect against collisions with the table
-    if new_z <= 180:
-        new_z = 180
 
     url = base_url + '/tcp/target'
     headers = {
@@ -109,6 +107,23 @@ def move(new_x, new_y, new_z, new_pitch, new_roll, new_yaw, token):
 
     return response.status_code
 
+def open_gripper(token):
+    url = base_url + '/gripper'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authentication': token
+    }
+    response = requests.put(url, headers=headers, data='500')
+    return response.status_code
+
+def close_gripper(token):
+    url = base_url + '/gripper'
+    headers = {
+        'Content-Type': 'application/json',
+        'Authentication': token
+    }
+    response = requests.put(url, headers=headers, data='0')
+    return response.status_code
 
 # Toggle gripper with "toggle"
 def toggle(token):

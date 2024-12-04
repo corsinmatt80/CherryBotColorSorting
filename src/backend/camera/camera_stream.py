@@ -23,7 +23,7 @@ def crop_image(path: str, path_crop: str):
         return
 
     # Cropping the image
-    crop_img = image[170:280, 200:370]
+    crop_img = image[180:230, 260:330]
 
     # Save the cropped image
     cv2.imwrite(path_crop +".jpg", crop_img)
@@ -47,12 +47,13 @@ def are_images_equal(image_path1: str, image_path2: str) -> bool:
         return False
 
     # Check if the images have the same content
-    difference = cv2.subtract(image1, image2)
+    difference = cv2.absdiff(image1, image2)
     b, g, r = cv2.split(difference)
 
     # Check how many pixels have a difference greater than 10
     if difference.sum() > 100000:
         print(f"Difference: {difference.sum()}")
+        print(b.sum(), g.sum(), r.sum())
         return False
     else:
         print("No clothes detected.")

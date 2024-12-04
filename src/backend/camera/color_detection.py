@@ -18,18 +18,6 @@ def get_color_in_middle() -> tuple[int, int, int]:
         return rgb
     return None
 
-def get_average_color(image_path) -> tuple[int, int, int]:
-    image = cv2.imread(image_path)
-    if image is None:
-        print("Failed to load image")
-        return None
-
-    # Calculate the average color of each channel
-    average_color_per_row = np.average(image, axis=0)
-    average_color = np.average(average_color_per_row, axis=0)
-    average_color = tuple([int(c) for c in average_color[::-1]])  # Convert BGR to RGB and make integers
-    return average_color
-
 def classify_clothes(average_color: tuple) -> str:
         r, g, b = average_color
         brightness = np.sqrt(0.299 * r**2 + 0.587 * g**2 + 0.114 * b**2)
@@ -42,6 +30,53 @@ def classify_clothes(average_color: tuple) -> str:
             return "unsortable"
         else:
             return "colored"
+        
+def classify_color(average_color):
+    r, g, b = average_color
+    brightness = np.sqrt(0.299 * r**2 + 0.587 * g**2 + 0.114 * b**2)
+    
+    if brightness > 200:
+        return "light"
+    elif brightness < 50:
+        return "dark"
+    else:
+        return "colored"
+
+def classify_clothes(image_path):
+    # Step 1: Read the image
+    img = cv2.imread(image_path)
+    
+    # Step 2: Convert the image to HSV color space
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    
+    # Step 3: Extract the Value (brightness) and Saturation channels
+    h, s, v = cv2.split(hsv_img)
+    
+    # Step 4: Calculate average saturation and brightness
+    avg_saturation = np.mean(s)
+    avg_brightness = np.mean(v)
+    
+    # Step 5: Classify light/dark based on average brightness (V channel)
+    if avg_brightness < 85:  # Dark image threshold (0-255 scale)
+        brightness_category = "dark"
+    else:
+        brightness_category = "light"
+    
+    # Step 6: Classify colorful/gray based on average saturation (S channel)
+    if avg_saturation < 50:  # Low saturation means grayscale-like
+        color_category = "grayscale"
+    else:
+        color_category = "colorful"
+    
+    # Step 7: Classify as light, dark, or colorful
+    if brightness_category == "light" and color_category == "grayscale":
+        return "light"
+    elif brightness_category == "dark" and color_category == "grayscale":
+        return "dark"
+    elif color_category == "colorful":
+        return "colored"
+    else:
+        return "unsortable"  # In case the image is too uniform or ambiguous
 
 # if the amount of black is similar to the amount of white in a cloth, the cloth cannot be sorted.
 def can_be_sorted(image_path: str, white_threshold: int = 230, black_threshold: int = 25, tolerance: float = 5.0) -> bool:

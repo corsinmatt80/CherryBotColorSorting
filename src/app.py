@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 from backend.camera.camera_stream import capture_process_image, are_images_equal, save_image
-from backend.camera.color_detection import get_average_color, can_be_sorted, classify_clothes
+from backend.camera.color_detection import can_be_sorted, classify_clothes
 from backend.robot_control.sort_clothes import pick_up_cloth_and_move_to_bin
-from backend.robot_control.robot_control_http import log_on, get_token
+from backend.robot_control.robot_control_http import log_on, get_token, initialize, open_gripper
 from backend.basket_detection.detect_basket import detect_baskets
 import cv2
 import threading
@@ -16,11 +16,19 @@ sorting_status = {"running": False, "message": "", "logs": []}
 
 
 class LaundrySorter:
-    def __init__(self, base_image_name: str, email: str, name: str):
+    def __init__(self, email: str, name: str):
         self.email = email
         self.name = name
-        self.base_image_path = base_image_name + "_cropped.jpg"
-        self.token = log_on(email, name)
+        self.token = get_token()
+        open_gripper(self.token)
+        time.sleep(1)
+        initialize(self.token)
+        time.sleep(10)
+        self.base_image_name="base_image"
+        capture_process_image("base_image")
+        self.base_image_path = "base_image_cropped.jpg"
+        
+        
 
     def run(self):
         global sorting_status
@@ -35,21 +43,20 @@ class LaundrySorter:
             if current_image is None:
                 continue
 
-            if are_images_equal(self.base_image_path, current_image_path):
+            if are_images_equal(current_image_path, self.base_image_path):
                 sorting_status["message"] = "Sorting process is complete."
                 sorting_status["logs"].append("Sorting process is complete.")
             else:
                 sorting_status["message"] = "Clothing detected on the table."
                 sorting_status["logs"].append("Clothing detected on the table.")
-                if can_be_sorted(current_image_path):
-                    avg_color = get_average_color(current_image_path)
-                    sorting_status["logs"].append(f"Image can be sorted. Average color: {avg_color}")
-                    cloth_type = classify_clothes(avg_color)
-                    pick_up_cloth_and_move_to_bin(token=self.token, color=cloth_type)
-                else:
-                    sorting_status["logs"].append("Image cannot be sorted automatically, please sort manually.")
+                cloth_type = classify_clothes(current_image_path)
+                pick_up_cloth_and_move_to_bin(token=self.token, color=cloth_type)
+                initialize(self.token)
+                time.sleep(9)
+                """               sorting_status["logs"].append("Image cannot be sorted automatically, please sort manually.")
                     pick_up_cloth_and_move_to_bin(token=self.token, color="unsortable")
-            time.sleep(1)
+                    initialize(self.token)
+                    time.sleep(9) """
 
         sorting_status["running"] = False
 
@@ -97,9 +104,7 @@ def check_baskets():
 def start_sorting():
     global sorting_status
     if not sorting_status["running"]:
-        base_image_name="base_image"
-        capture_process_image("base_image")
-        sorter = LaundrySorter(base_image_name, email="yippie.mail@gmail.com", name="yeetmaster")
+        sorter = LaundrySorter(email="yippie.mail@gmail.com", name="yeetmaster")
         thread = threading.Thread(target=sorter.run)
         thread.start()
         return jsonify({"status": "Sorting started"})
