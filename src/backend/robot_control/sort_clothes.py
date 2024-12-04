@@ -82,19 +82,3 @@ def pick_up_cloth_and_move_to_bin(token: str, color: str):
     pick_up_cloth(token)
     move_to_bin(color, token)
 
-# Create an API endpoint to get the bin counts
-from flask import Flask, jsonify
-
-app = Flask(__name__)
-
-@app.route('/bin_counts', methods=['GET'])
-def get_bin_counts():
-    return jsonify({
-        'light_bin_count': light_bin_count,
-        'dark_bin_count': dark_bin_count,
-        'unsortable_bin_count': unsortable_bin_count,
-        'colored_bin_count': colored_bin_count
-    })
-
-if __name__ == '__main__':
-    app.run(debug=True)

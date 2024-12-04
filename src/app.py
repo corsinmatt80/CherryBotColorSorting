@@ -9,6 +9,7 @@ import threading
 import time
 import numpy as np
 import os
+from backend.robot_control.sort_clothes import bin_counter
 
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 sorting_status = {"running": False, "message": "", "logs": []}
@@ -53,12 +54,13 @@ class LaundrySorter:
                 pick_up_cloth_and_move_to_bin(token=self.token, color=cloth_type)
                 initialize(self.token)
                 time.sleep(9)
-                """               sorting_status["logs"].append("Image cannot be sorted automatically, please sort manually.")
-                    pick_up_cloth_and_move_to_bin(token=self.token, color="unsortable")
-                    initialize(self.token)
-                    time.sleep(9) """
-
-        sorting_status["running"] = False
+            # If any bin is full, stop the sorting process
+            if bin_counter.light_bin_count >= 10 or bin_counter.dark_bin_count >= 10 or bin_counter.unsortable_bin_count >= 10 or bin_counter.colored_bin_count >= 10:
+                sorting_status["message"] = "One of the bins is full. Sorting process stopped."
+                sorting_status["logs"].append("One of the bins is full. Sorting process stopped.")
+                sorting_status["running"] = False
+                break
+                
 
 
 
@@ -104,6 +106,7 @@ def check_baskets():
 def start_sorting():
     global sorting_status
     if not sorting_status["running"]:
+        sorting_status["running"] = True
         sorter = LaundrySorter(email="yippie.mail@gmail.com", name="yeetmaster")
         thread = threading.Thread(target=sorter.run)
         thread.start()
@@ -111,10 +114,22 @@ def start_sorting():
     else:
         return jsonify({"status": "Sorting already in progress"})
 
+
+@app.route('/bin_counts', methods=['GET'])
+def get_bin_counts():
+    return jsonify({
+        'light_bin_count': bin_counter.light_bin_count,
+        'dark_bin_count': bin_counter.dark_bin_count,
+        'unsortable_bin_count': bin_counter.unsortable_bin_count,
+        'colored_bin_count': bin_counter.colored_bin_count
+        })
+
 @app.route("/status", methods=["GET"])
 def status():
     global sorting_status
     return jsonify(sorting_status)
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

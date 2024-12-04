@@ -6,7 +6,6 @@ def save_image(path : str):
     if cap.isOpened():
         ret, frame = cap.read()
         if ret:
-            cv2.imshow("Camera Frame", frame)
             cv2.imwrite(path+".jpg", frame)
             cv2.destroyAllWindows()
         else:
