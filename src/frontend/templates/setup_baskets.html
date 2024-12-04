@@ -10,7 +10,7 @@
 
 <body>
     <h1>Set Baskets</h1>
-    <p>Adjust the basket positions if needed by dragging on the canvas. Then click "Accept" or "Adjust".</p>
+    <p>Select four baskets into which the robot will sort the clothes".</p>
 
     <div>
         <canvas id="basketsCanvas"></canvas>
@@ -63,7 +63,7 @@
 
             if (clickedSquareIndex !== -1) {
                 const clickedSquare = detectedSquares[clickedSquareIndex];
-                if (selectedSquares.length > 4){
+                if (selectedSquares.length > 4) {
                     alert("You can only select 4 baskets.");
                     return;
                 }
@@ -77,49 +77,10 @@
             }
         });
 
-        let isDragging = false;
-        let currentSquare = null;
-
-        function onMouseDown(event) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
-
-            // Check if user clicked inside a square
-            currentSquare = detectedSquares.find(([x, y, w, h]) =>
-                mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h
-            );
-
-            if (currentSquare) {
-                isDragging = true;
-            }
-        }
-
-        function onMouseUp(event) {
-            if (isDragging && currentSquare) {
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = event.clientX - rect.left;
-                const mouseY = event.clientY - rect.top;
-
-                // Update square position
-                const [x, y, w, h] = currentSquare;
-                currentSquare[0] = mouseX - w / 2;
-                currentSquare[1] = mouseY - h / 2;
-
-                // Redraw canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0);
-                drawSquares(detectedSquares);
-
-                isDragging = false;
-                currentSquare = null;
-            }
-        }
-
         function updateAcceptButtonState() {
-        const acceptButton = document.getElementById("acceptButton");
-        acceptButton.disabled = selectedSquares.length < 4;
-    }
+            const acceptButton = document.getElementById("acceptButton");
+            acceptButton.disabled = selectedSquares.length < 4;
+        }
 
         // Handle Accept and Adjust buttons
         document.getElementById("acceptButton").addEventListener("click", () => {
@@ -130,8 +91,13 @@
                 },
                 // Send the selected squares to the server
                 body: JSON.stringify({ squares: selectedSquares }),
-            }).then(response => response.json())
-                .then(data => alert(data.status));
+            }).then((response) => {
+                if (response.ok) {
+                    window.location.href = "/";
+                } else {
+                    alert("Error setting up baskets. Please try again.");
+                }
+            })
         });
     </script>
 </body>

@@ -34,11 +34,9 @@ def capture_process_image(path : str):
 
 def are_images_equal(image_path1: str, image_path2: str) -> bool:
     # Load the two images
-    image1 = cv2.imread("assets/cloth_cropped.jpg")
-    image2 = cv2.imread("assets/base_cropped.jpg")
-    cv2.imshow("1", image1)
-    cv2.imshow("2", image2)
-    cv2.waitKey(10000)
+    image1 = cv2.imread(image_path1)
+    image2 = cv2.imread(image_path2)
+
     if image1 is None or image2 is None:
         print("One or both images failed to load.")
         return False
@@ -52,8 +50,12 @@ def are_images_equal(image_path1: str, image_path2: str) -> bool:
     difference = cv2.subtract(image1, image2)
     b, g, r = cv2.split(difference)
 
-    if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
-        return True
-    else:
+    # Check how many pixels have a difference greater than 10
+    if difference.sum() > 100000:
+        print(f"Difference: {difference.sum()}")
         return False
+    else:
+        print("No clothes detected.")
+        return True
+        
 

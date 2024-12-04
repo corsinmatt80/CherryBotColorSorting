@@ -50,6 +50,28 @@
                     statusMessage.style.color = "red";
                 });
         });
+
+        // Function to check if the baskets have been detected when the page loads
+        fetch("/check_baskets")
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "Baskets set up") {
+                    detectBasketsButton.disabled = false;
+                    startSortingButton.disabled = false;
+                    statusMessage.textContent = "Baskets detected. You can now start the sorting process.";
+                    statusMessage.style.color = "green";
+                }
+                else if (data.status === "Baskets not set up") {
+                    detectBasketsButton.disabled = false;
+                    startSortingButton.disabled = true;
+                    statusMessage.textContent = "Please detect baskets before starting the sorting process.";
+                }
+            })
+            .catch(error => {
+                console.error("Error checking if baskets are detected:", error);
+                statusMessage.textContent = "Error checking if baskets are detected. Please try again.";
+                statusMessage.style.color = "red";
+            });
     </script>
 </body>
 </html>
