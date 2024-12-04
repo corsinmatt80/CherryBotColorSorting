@@ -3,11 +3,32 @@ import numpy as np
 from backend.utils.image_to_robot import get_robot_coordinates_of_basket_center
 import time
 
-# Initialize counters for each bin
-light_bin_count = 0
-dark_bin_count = 0
-unsortable_bin_count = 0
-colored_bin_count = 0
+class BinCounter:
+    def __init__(self):
+        self.light_bin_count = 0
+        self.dark_bin_count = 0
+        self.unsortable_bin_count = 0
+        self.colored_bin_count = 0
+
+    def increment(self, bin_type):
+        if bin_type == "light":
+            self.light_bin_count += 1
+            if self.light_bin_count == 10:
+                print("Light bin is full")
+        elif bin_type == "dark":
+            self.dark_bin_count += 1
+            if self.dark_bin_count == 10:
+                print("Dark bin is full")
+        elif bin_type == "unsortable":
+            self.unsortable_bin_count += 1
+            if self.unsortable_bin_count == 10:
+                print("Unsortable bin is full")
+        elif bin_type == "colored":
+            self.colored_bin_count += 1
+            if self.colored_bin_count == 10:
+                print("Colored bin is full")
+
+bin_counter = BinCounter()
 
 def pick_up_cloth(token: str):
     open_gripper(token)
@@ -34,36 +55,28 @@ def move_to_bin(color: str, token: str):
         move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token) 
         time.sleep(10)
         open_gripper(token)
-        light_bin_count += 1
-        if light_bin_count == 10:
-            print("Light bin is full")
+        bin_counter.increment("light")
     elif color == "dark":
         print("Moving to dark bin")
         centroid = robot_centroids[1]
         move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token)
         time.sleep(10) 
         open_gripper(token)
-        dark_bin_count += 1
-        if dark_bin_count == 10:
-            print("Dark bin is full")
+        bin_counter.increment("dark")
     elif color == "unsortable":
         print("Moving to unsortable bin")
         centroid = robot_centroids[2]
         move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token) 
         time.sleep(10)
         open_gripper(token)
-        unsortable_bin_count += 1
-        if unsortable_bin_count == 10:
-            print("Unsortable bin is full")
+        bin_counter.increment("unsortable")
     elif color == "colored":
         print("Moving to colored bin")
         centroid = robot_centroids[3]
         move(float(centroid[0]), float(centroid[1]), 200, -180, 0, -180, token) 
         time.sleep(10)
         open_gripper(token)
-        colored_bin_count += 1
-        if colored_bin_count == 10:
-            print("Colored bin is full")
+        bin_counter.increment("colored")
 
 def pick_up_cloth_and_move_to_bin(token: str, color: str):
     pick_up_cloth(token)
