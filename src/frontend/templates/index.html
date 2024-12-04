@@ -27,30 +27,7 @@
 
         // Event Listener for Detect Baskets Button
         detectBasketsButton.addEventListener("click", () => {
-            // Send a request to detect baskets
-            fetch("/setup_baskets", { method: "POST" })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === "Baskets detected") {
-                        // Enable the "Start Sorting" button
-                        startSortingButton.disabled = false;
-                        statusMessage.textContent = "Baskets have been detected. You can now start the sorting process.";
-                        statusMessage.style.color = "green";
-                    } else if (data.status === "Adjust baskets") {
-                        // Direct user to adjust the baskets if needed
-                        statusMessage.textContent = "Baskets need manual adjustment. Please adjust them before starting.";
-                        statusMessage.style.color = "orange";
-                    } else {
-                        // Handle unexpected responses
-                        statusMessage.textContent = "Error: Could not detect baskets. Try again.";
-                        statusMessage.style.color = "red";
-                    }
-                })
-                .catch(error => {
-                    console.error("Error detecting baskets:", error);
-                    statusMessage.textContent = "Error detecting baskets. Please try again.";
-                    statusMessage.style.color = "red";
-                });
+            window.location.href = "/setup_baskets";
         });
 
         // Event Listener for Start Sorting Button

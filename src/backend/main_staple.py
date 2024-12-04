@@ -12,7 +12,7 @@ class LaundrySorter:
     def __init__(self, base_image_name: str, email : str, name : str):
         self.email = email
         self.name = name
-        self.base_image_path = "assets/" + base_image_name
+        self.base_image_path = "/assets/" + base_image_name
         self.token = get_token()
 
 

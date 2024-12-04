@@ -3,8 +3,9 @@ import cv2
 import numpy as np
 
 def detect_baskets():
-    save_image('baskets')
-    baskets_image = cv2.imread('../assets/baskets.jpg')
+
+    save_image('frontend/static/baskets')
+    baskets_image = cv2.imread('frontend/static/baskets.jpg')
 
     #there exists a library to do this with pre given functions
     #we did it manually on purpose to understand the whole process
@@ -28,12 +29,11 @@ def detect_baskets():
 
     image_square_figures, squares = detect_square_figures(baskets_image.copy(),edges)
     cv2.imshow('Squares', image_square_figures)
-    # Save processed images for display
-    processed_image_path = "../frontend/static/processed_baskets.jpg"
-    cv2.imwrite(processed_image_path, image_square_figures)
+    
+    image_path = 'static/baskets.jpg'
 
     # Return the path for use in the frontend
-    return processed_image_path, squares
+    return image_path, squares
 
 
 def convert_gray(image):
@@ -126,8 +126,23 @@ def detect_round_figures(image, edges, rad, circ):
 
     return image, round_figures
 
+def angle_cos(p0, p1, p2):
+    d1, d2 = (p0 - p1).astype(np.float32), (p2 - p1).astype(np.float32)
+    return abs(np.dot(d1, d2) / np.sqrt(np.dot(d1, d1) * np.dot(d2, d2)))
 
+def is_overlapping(rect1, rect2, threshold=0.1):
+    x1, y1, w1, h1 = rect1
+    x2, y2, w2, h2 = rect2
 
+    overlap_x = max(0, min(x1 + w1, x2 + w2) - max(x1, x2))
+    overlap_y = max(0, min(y1 + h1, y2 + h2) - max(y1, y2))
+    overlap_area = overlap_x * overlap_y
+
+    area1 = w1 * h1
+    area2 = w2 * h2
+
+    return overlap_area / min(area1, area2) > threshold
+    
 def detect_square_figures(image, edges):
     #function for finding contours
     #those are objects or figures that are closed
@@ -141,13 +156,12 @@ def detect_square_figures(image, edges):
         approx = cv2.approxPolyDP(contour, epsilon, True)
 
         if len(approx) == 4 and cv2.contourArea(contour) > 100:
-            #boundingRect : finds a rectangle around for the four points
-            (x, y, w, h) = cv2.boundingRect(approx)
-            aspect_ratio = w / float(h)
-            if 0.8 <= aspect_ratio <= 1.2:
-                square_figures.append(approx)
-                cv2.drawContours(image, [approx], -1, (0,255,0),2)
+            # Check if the contour is in the shape of a square
+            approx = approx.reshape(-1, 2)
+            max_cos = np.max([angle_cos(approx[i], approx[(i+1) % 4], approx[(i+2) % 4]) for i in range(4)])
+            if max_cos < 0.2:  # Threshold for cosine of 90 degrees
+                if not any(is_overlapping(cv2.boundingRect(approx), cv2.boundingRect(existing)) for existing in square_figures):
+                    square_figures.append(approx)
+            
 
     return image, square_figures
-
-detect_baskets()

@@ -33,3 +33,9 @@ button:hover {
     border: 1px solid #ddd;
     border-radius: 5px;
 }
+
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

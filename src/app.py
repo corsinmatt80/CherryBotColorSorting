@@ -7,9 +7,13 @@ from backend.basket_detection.detect_basket import detect_baskets
 import cv2
 import threading
 import time
+import numpy as np
+import os
 
 app = Flask(__name__, static_folder="frontend/static", template_folder="frontend/templates")
 sorting_status = {"running": False, "message": "", "logs": []}
+
+
 
 class LaundrySorter:
     def __init__(self, base_image_name: str, email: str, name: str):
@@ -55,23 +59,29 @@ def index():
     return render_template("index.html")
 
 # Route to display the basket setup page
-@app.route("/setup_baskets", methods=["GET", "POST"])
+@app.route("/setup_baskets", methods=["POST"])
 def setup_baskets():
-    if request.method == "POST":
-        # Handle user input (accept or drag to adjust)
-        action = request.json.get("action")
-        if action == "accept":
-            # User accepted the baskets
-            return jsonify({"status": "Baskets accepted"})
-        elif action == "adjust":
-            # User wants to adjust baskets; handle the adjustment logic
-            new_basket_positions = request.json.get("baskets")
-            # Save new basket positions here (implement logic to save)
-            return jsonify({"status": "Baskets adjusted", "positions": new_basket_positions})
+    # Check if the response contains four squares
+    squares = request.json.get("squares")
+    if len(squares) != 4:
+        return jsonify({"status": "Invalid number of squares"})
+    else:
+        # Save squares in /Backend/assets
+        save_directory = os.path.join("backend", "assets")
+        os.makedirs(save_directory, exist_ok=True)
+        save_path = os.path.join(save_directory, "squares.npy")
+        np.save(save_path, squares)
+        print("Squares received:", squares)
+        return jsonify({"status": "Squares received"})
 
+
+@app.route("/setup_baskets", methods=["GET"])
+def get_basket_setup():
     # On GET, display the processed image
     processed_image_path, squares = detect_baskets()
-    return render_template("setup_baskets.html", image_path=processed_image_path, squares=squares)
+    squares_serializable = [square.tolist() for square in squares]
+    return render_template("setup_baskets.html", image_path=processed_image_path, squares=squares_serializable)
+
 
 @app.route("/start_sorting", methods=["POST"])
 def start_sorting():
