@@ -20,6 +20,7 @@ class LaundrySorter:
     def __init__(self, email: str, name: str):
         self.email = email
         self.name = name
+        log_on(self.email, self.name)
         self.token = get_token()
         open_gripper(self.token)
         time.sleep(1)
@@ -107,7 +108,7 @@ def start_sorting():
     global sorting_status
     if not sorting_status["running"]:
         sorting_status["running"] = True
-        sorter = LaundrySorter(email="yippie.mail@gmail.com", name="yeetmaster")
+        sorter = LaundrySorter(email="laundry_sorter@unisg.ch", name="laundry_sorter")
         thread = threading.Thread(target=sorter.run)
         thread.start()
         return jsonify({"status": "Sorting started"})
