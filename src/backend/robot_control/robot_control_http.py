@@ -7,20 +7,6 @@ import time
 base_url = 'https://api.interactions.ics.unisg.ch/cherrybot2'
 movement_speed = 100
 
-def print_cords(x_pos, y_pos, z_pos, pitch, roll, yaw):
-    print("Coordinates:", "\n\tx: ", x_pos, "\n\ty: ", y_pos, "\n\tz: ", z_pos, "\n")
-    print("Rotation:", "\n\tpitch: ", pitch, "\n\troll: ", roll, "\n\tyaw: ", yaw, "\n")
-
-def get_cords(token):
-    tcp = get_tcp(token)
-    x_pos = tcp['coordinate']['x']
-    y_pos = tcp['coordinate']['y']
-    z_pos = tcp['coordinate']['z']
-    pitch = tcp['rotation']['pitch']
-    roll = tcp['rotation']['roll']
-    yaw = tcp['rotation']['yaw']
-    return x_pos, y_pos, z_pos, pitch, roll, yaw
-
 
 def initialize(token):
     time.sleep(1)
@@ -31,20 +17,6 @@ def initialize(token):
     }
     response = requests.put(url, headers=headers)
     return response.status_code
-
-
-def get_tcp(token):
-    time.sleep(1)
-    url = base_url + '/tcp'
-    headers = {
-        'Content-Type': 'application/json',
-        'Authentication': token
-    }
-    try:
-        data = dict(json.loads(requests.get(url, headers=headers).text))
-        return data
-    except:
-        return None
 
 
 def get_token():
@@ -116,34 +88,6 @@ def open_gripper(token):
     response = requests.put(url, headers=headers, data='500')
     return response.status_code
 
-def close_gripper(token):
-    url = base_url + '/gripper'
-    headers = {
-        'Content-Type': 'application/json',
-        'Authentication': token
-    }
-    response = requests.put(url, headers=headers, data='0')
-    return response.status_code
-
-# Toggle gripper with "toggle"
-def toggle(token):
-    url = base_url + '/gripper'
-    headers = {
-        'Content-Type': 'application/json',
-        'Authentication': token
-    }
-
-    distance = json.loads(requests.get(url, headers=headers).text)
-    time.sleep(1)
-    try:
-        if int(distance) == 0:
-            response = requests.put(url, headers=headers, data='500')
-            return response.status_code
-        else:
-            response = requests.put(url, headers=headers, data='0')
-            return response.status_code
-    except:
-        return None
 
 
 # Log off with "log_off" command

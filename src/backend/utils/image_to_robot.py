@@ -27,9 +27,4 @@ def get_robot_coordinates_of_basket_center(corners):
     robot_coords = transform_point(centroid_x, centroid_y)
     return robot_coords
 
-squares = np.array([[[100, 100], [200, 100], [200, 200], [100, 200]], [[300, 300], [400, 300], [400, 400], [300, 400]]])
-robot_centroids = np.array([get_robot_coordinates_of_basket_center(square) for square in squares])
 
-print(robot_centroids)
-print(robot_centroids[0])
-print(robot_centroids[1][0])

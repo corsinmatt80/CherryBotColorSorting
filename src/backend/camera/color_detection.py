@@ -1,22 +1,5 @@
 import cv2
 import numpy as np
-from backend.camera.camera_stream import save_image
-
-
-def get_color_in_middle() -> tuple[int, int, int]:
-    save_image("cloth")
-
-    cloth = cv2.imread("../assets/cloth.jpg")
-    if cloth is None:
-        print("Failed to load image")
-    else:
-        height, width, _ = cloth.shape
-        center_y = height / 2
-        center_x = width / 2
-        (b, g, r) = cloth[int(center_y), int(center_x)]
-        rgb = (int(r), int(g), int(b))
-        return rgb
-    return None
 
 def classify_clothes(average_color: tuple) -> str:
         r, g, b = average_color
@@ -30,17 +13,7 @@ def classify_clothes(average_color: tuple) -> str:
             return "unsortable"
         else:
             return "colored"
-        
-def classify_color(average_color):
-    r, g, b = average_color
-    brightness = np.sqrt(0.299 * r**2 + 0.587 * g**2 + 0.114 * b**2)
-    
-    if brightness > 200:
-        return "light"
-    elif brightness < 50:
-        return "dark"
-    else:
-        return "colored"
+
 
 def classify_clothes(image_path):
     # Step 1: Read the image
@@ -95,6 +68,3 @@ def can_be_sorted(image_path: str, white_threshold: int = 230, black_threshold: 
 
     # Check if the percentages are within the tolerance range
     return abs(white_percentage - black_percentage) > tolerance
-
-def configure_camera():
-    return get_color_in_middle()
